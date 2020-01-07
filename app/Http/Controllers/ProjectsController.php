@@ -10,22 +10,26 @@ use Illuminate\View\View;
 
 class ProjectsController extends Controller
 {
-    public function index(Project $model): View
+    public function index(): View
     {
-        $projects = $model::all();
+        $projects = auth()->user()->projects;
 
         return view('projects.index', compact('projects'));
     }
 
-    public function store(Project $model, ProjectsRequest $request): RedirectResponse
+    public function store(ProjectsRequest $request): RedirectResponse
     {
-        $model::create($request->all());
+        auth()->user()->projects()->create($request->all());
 
         return redirect('/projects');
     }
 
     public function show(Project $project): View
     {
+        if (auth()->user()->isNot($project->owner)) {
+            abort(403);
+        }
+
         return view('projects.show', compact('project'));
     }
 }
